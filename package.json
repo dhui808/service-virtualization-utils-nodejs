@@ -1,0 +1,19 @@
+{
+  "name": "service-virtualization-nodejs",
+  "version": "1.0.0",
+  "description": "Node service virtualization server",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "keywords": [
+    "Node",
+    "REST"
+  ],
+  "author": "Danny Hui",
+  "license": "MIT",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1"
+  }
+}
