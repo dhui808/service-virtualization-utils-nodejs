@@ -6,6 +6,8 @@ var MockData = function(mockServerName,  mockDataHome) {
 	mockData.mappingFileTimestampMap = {};
 	mockData.jsonMappingMap = {};
 	mockData.defaultMappingMap = {};
+	mockData.alternateResponseFiles = {};
+	mockData.entryPageUrl = {};
 	mockData.mockDataHome = mockDataHome;
 	mockData.mockServerName = mockServerName;
 	console.debug("mockDataHome="+ this.mockDataHome);
@@ -29,30 +31,30 @@ MockData.prototype.findFilePath = function(pathInfo, flow, scenario) {
 	
 	//user does not select flow/scenario
 	if (null == flow) {
-		jsonOrXmlFile = findMatchingFile(defaultMappingMap, pathInfo);
+		jsonOrXmlFile = this.findMatchingFile(defaultMappingMap, pathInfo);
 		responseFile = this.getServerServiceVirtualizationDataPath() + "/" + jsonOrXmlFile;
-		fileExists = fs.statSync(responseFile).isFile();
+		fileExists = this.doesFileExist(responseFile);
 		console.debug("responseFile:" + responseFile + " exists? " + fileExists);
 		
 		return responseFile;
 	}
 	
 	//user does select flow/scenario
-	jsonOrXmlFile =  findMatchingFile(this.jsonMappingMap[flow], pathInfo);
+	jsonOrXmlFile =  this.findMatchingFile(this.jsonMappingMap[flow], pathInfo);
 	responseFile = this.getServerServiceVirtualizationDataPath() + "/" + flow + "/" + scenario + "/" + jsonOrXmlFile;
-	fileExists = fs.statSync(responseFile).isFile();
+	fileExists = this.doesFileExist(responseFile);
 	
 	if (!fileExists) {
 		//try find response file from the default scenario of this flow
 		responseFile = this.getServerServiceVirtualizationDataPath() + "/" + flow + "/default/" + jsonOrXmlFile;
-		fileExists = fs.statSync(responseFile).isFile();
+		fileExists = this.doesFileExist(responseFile);
 	}
 	
 	if (!fileExists) {
 		//try find response file from the default scenario
-		jsonOrXmlFile = findMatchingFile(defaultMappingMap, pathInfo);
+		jsonOrXmlFile = this.findMatchingFile(defaultMappingMap, pathInfo);
 		responseFile = this.getServerServiceVirtualizationDataPath() + "/" + jsonOrXmlFile;
-		fileExists = fs.statSync(responseFile).isFile();
+		fileExists = this.doesFileExist(responseFile);
 	}
 
 	console.debug("responseFile:" + responseFile + " exists? " + fileExists);
@@ -60,9 +62,13 @@ MockData.prototype.findFilePath = function(pathInfo, flow, scenario) {
 	return responseFile;
 }
 
+MockData.prototype.doesFileExist = function(path) {
+	return fs.existsSync(path) && fs.statSync(path).isFile();
+}
+
 MockData.prototype.findMatchingFile = function(map, pathInfo) {
 	
-	var matchingFile = map.get(pathInfo);
+	var matchingFile = map[pathInfo];
 	
 	if (null == matchingFile) {
 		//try pattern matching
@@ -94,7 +100,7 @@ MockData.prototype.loadAllMappingFiles = function() {
 	var entryMapping = null;
 	
 	entryMapping = JSON.parse(entryMappingFile);
-	entryPageUrl = entryMapping['entryPageUrl'];
+	this.entryPageUrl = entryMapping['entryPageUrl'];
 	mappingFileFolders = entryMapping['flows'];
 	
 	console.debug("Entry Mapping file:");
